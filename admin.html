@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Administration - Demandes</title>
+  <script src="https://www.gstatic.com/firebasejs/9.17.2/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.17.2/firebase-firestore.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 10px;
+      text-align: left;
+    }
+    th {
+      background-color: #f4f4f4;
+    }
+  </style>
+</head>
+<body>
+  <h1>Liste des demandes</h1>
+  <table>
+    <thead>
+      <tr>
+        <th>Nom</th>
+        <th>Demande</th>
+        <th>Date</th>
+      </tr>
+    </thead>
+    <tbody id="demandesTable"></tbody>
+  </table>
+
+  <script>
+    // Configuration Firebase
+    const firebaseConfig = {
+      apiKey: "AIzaSyAgJk3Rh7yeTxWqsIY3r6VutrkBPqhYW-M",
+      authDomain: "demandes-75e69.firebaseapp.com",
+      projectId: "demandes-75e69",
+      storageBucket: "demandes-75e69.firebasestorage.app",
+      messagingSenderId: "577177831171",
+      appId: "1:577177831171:web:5a65b35d5be7e9427d4b36"
+    };
+
+    // Initialiser Firebase
+    const app = firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    // Charger les demandes
+    async function chargerDemandes() {
+      const demandesTable = document.getElementById('demandesTable');
+      try {
+        const snapshot = await db.collection('demandes').get();
+        snapshot.forEach((doc) => {
+          const demande = doc.data();
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td>${demande.nom}</td>
+            <td>${demande.demande}</td>
+            <td>${new Date(demande.date).toLocaleString()}</td>
+          `;
+          demandesTable.appendChild(row);
+        });
+      } catch (error) {
+        console.error('Erreur lors du chargement des demandes :', error);
+      }
+    }
+
+    chargerDemandes();
+  </script>
+</body>
+</html>
