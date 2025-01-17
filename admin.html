@@ -5,64 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tableau de Bord Admin</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            margin: 0;
-            padding: 20px;
-        }
-        h1 {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            background: #fff;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        }
-        th, td {
-            padding: 12px;
-            text-align: left;
-            border-bottom: 1px solid #ddd;
-        }
-        th {
-            background-color: #28a745;
-            color: #fff;
-        }
-        tr:hover {
-            background-color: #f1f1f1;
-        }
-        .login-form {
-            max-width: 300px;
-            margin: 0 auto;
-            padding: 20px;
-            background: #fff;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        }
-        .login-form input {
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 10px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-        }
-        .login-form button {
-            width: 100%;
-            padding: 10px;
-            background-color: #28a745;
-            color: #fff;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        .login-form button:hover {
-            background-color: #218838;
-        }
-        .hidden {
-            display: none;
-        }
+        /* (Vos styles existants restent les mêmes) */
     </style>
 </head>
 <body>
@@ -76,6 +19,7 @@
 
     <div id="adminSection" class="hidden">
         <h1>Tableau de Bord Admin</h1>
+        <button id="logoutButton" style="margin-bottom: 20px;">Déconnexion</button>
         <table id="demandesTable">
             <thead>
                 <tr>
@@ -94,7 +38,7 @@
         // Import Firebase functions
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-        import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         // Firebase configuration
         const firebaseConfig = {
@@ -111,6 +55,20 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
 
+        // Vérifier l'état de connexion au chargement de la page
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                // Utilisateur connecté
+                document.getElementById('loginSection').classList.add('hidden');
+                document.getElementById('adminSection').classList.remove('hidden');
+                loadDemandes(); // Charger les demandes
+            } else {
+                // Utilisateur non connecté
+                document.getElementById('loginSection').classList.remove('hidden');
+                document.getElementById('adminSection').classList.add('hidden');
+            }
+        });
+
         // Login function
         document.getElementById('loginButton').addEventListener('click', async () => {
             const email = document.getElementById('email').value;
@@ -118,12 +76,19 @@
 
             try {
                 await signInWithEmailAndPassword(auth, email, password);
-                document.getElementById('loginSection').classList.add('hidden');
-                document.getElementById('adminSection').classList.remove('hidden');
-                loadDemandes(); // Load demands after successful login
+                document.getElementById('errorMessage').style.display = 'none';
             } catch (error) {
                 console.error("Erreur de connexion : ", error);
                 document.getElementById('errorMessage').style.display = 'block';
+            }
+        });
+
+        // Logout function
+        document.getElementById('logoutButton').addEventListener('click', async () => {
+            try {
+                await signOut(auth);
+            } catch (error) {
+                console.error("Erreur de déconnexion : ", error);
             }
         });
 
@@ -147,4 +112,4 @@
         }
     </script>
 </body>
-</html>
+    </html>
