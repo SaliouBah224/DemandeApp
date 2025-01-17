@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Forum de Discussion</title>
+    <style>
+        /* Styles généraux */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 90%;
+            max-width: 600px;
+            text-align: center;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        /* Formulaire de connexion et d'inscription */
+        #loginSection, #registerSection {
+            display: none; /* Masqué par défaut */
+        }
+
+        #loginSection.active, #registerSection.active {
+            display: block;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #28a745;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #218838;
+        }
+
+        .switch-button {
+            background-color: transparent;
+            color: #28a745;
+            text-decoration: underline;
+            border: none;
+            cursor: pointer;
+        }
+
+        .switch-button:hover {
+            color: #218838;
+        }
+
+        /* Section de la messagerie */
+        #chatSection {
+            display: none; /* Masqué par défaut */
+        }
+
+        #messages {
+            height: 300px;
+            overflow-y: auto;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            padding: 10px;
+            margin-bottom: 10px;
+            background-color: #f9f9f9;
+        }
+
+        #messageForm {
+            display: flex;
+            gap: 10px;
+        }
+
+        #messageInput {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        #messageForm button {
+            padding: 10px 20px;
+            background-color: #28a745;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        #messageForm button:hover {
+            background-color: #218838;
+        }
+
+        /* Styles des messages */
+        .message {
+            margin-bottom: 10px;
+            padding: 10px;
+            background-color: #e1f5fe;
+            border-radius: 4px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .message .author {
+            font-weight: bold;
+            color: #333;
+        }
+
+        .message .timestamp {
+            font-size: 12px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Section de connexion -->
+        <div id="loginSection" class="active">
+            <h1>Connexion</h1>
+            <input type="email" id="loginEmail" placeholder="Email" required>
+            <input type="password" id="loginPassword" placeholder="Mot de passe" required>
+            <button id="loginButton">Se connecter</button>
+            <p>Pas de compte ? <button class="switch-button" id="showRegister">Créer un compte</button></p>
+        </div>
+
+        <!-- Section d'inscription -->
+        <div id="registerSection">
+            <h1>Créer un compte</h1>
+            <input type="text" id="registerPseudo" placeholder="Pseudo" required>
+            <input type="email" id="registerEmail" placeholder="Email" required>
+            <input type="password" id="registerPassword" placeholder="Mot de passe" required>
+            <button id="registerButton">Créer un compte</button>
+            <p>Déjà un compte ? <button class="switch-button" id="showLogin">Se connecter</button></p>
+        </div>
+
+        <!-- Section de la messagerie -->
+        <div id="chatSection">
+            <h1>Messagerie Groupe</h1>
+            <div id="messages"></div>
+            <form id="messageForm">
+                <input type="text" id="messageInput" placeholder="Écrivez un message..." required>
+                <button type="submit">Envoyer</button>
+            </form>
+        </div>
+    </div>
+
+    <script type="module">
+        // Import Firebase functions
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, query, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyAgJk3Rh7yeTxWqsIY3r6VutrkBPqhYW-M",
+            authDomain: "demandes-75e69.firebaseapp.com",
+            projectId: "demandes-75e69",
+            storageBucket: "demandes-75e69.appspot.com",
+            messagingSenderId: "577177831171",
+            appId: "1:577177831171:web:5a65b35d5be7e9427d4b36"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // Gestion des sections
+        const loginSection = document.getElementById('loginSection');
+        const registerSection = document.getElementById('registerSection');
+        const chatSection = document.getElementById('chatSection');
+
+        document.getElementById('showRegister').addEventListener('click', () => {
+            loginSection.classList.remove('active');
+            registerSection.classList.add('active');
+        });
+
+        document.getElementById('showLogin').addEventListener('click', () => {
+            registerSection.classList.remove('active');
+            loginSection.classList.add('active');
+        });
+
+        // Connexion
+        document.getElementById('loginButton').addEventListener('click', async () => {
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+
+            try {
+                await signInWithEmailAndPassword(auth, email, password);
+            } catch (error) {
+                alert("Erreur de connexion : " + error.message);
+            }
+        });
+
+        // Inscription
+        document.getElementById('registerButton').addEventListener('click', async () => {
+            const pseudo = document.getElementById('registerPseudo').value;
+            const email = document.getElementById('registerEmail').value;
+            const password = document.getElementById('registerPassword').value;
+
+            try {
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                await addDoc(collection(db, "users"), {
+                    uid: userCredential.user.uid,
+                    pseudo: pseudo,
+                    email: email
+                });
+                alert("Compte créé avec succès !");
+            } catch (error) {
+                alert("Erreur lors de la création du compte : " + error.message);
+            }
+        });
+
+        // Vérifier l'état de connexion
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                loginSection.style.display = 'none';
+                registerSection.style.display = 'none';
+                chatSection.style.display = 'block';
+                loadMessages(); // Charger les messages
+            } else {
+                loginSection.style.display = 'block';
+                registerSection.style.display = 'none';
+                chatSection.style.display = 'none';
+            }
+        });
+
+        // Envoyer un message
+        document.getElementById('messageForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const messageInput = document.getElementById('messageInput');
+            const message = messageInput.value.trim();
+
+            if (message !== "") {
+                try {
+                    await addDoc(collection(db, "messages"), {
+                        text: message,
+                        author: auth.currentUser.email,
+                        timestamp: serverTimestamp()
+                    });
+                    messageInput.value = "";
+                } catch (error) {
+                    console.error("Erreur lors de l'envoi du message : ", error);
+                }
+            }
+        });
+
+        // Charger les messages en temps réel
+        function loadMessages() {
+            const messagesContainer = document.getElementById('messages');
+            const q = query(collection(db, "messages"));
+
+            onSnapshot(q, (snapshot) => {
+                messagesContainer.innerHTML = "";
+                snapshot.forEach((doc) => {
+                    const data = doc.data();
+                    const messageElement = `
+                        <div class="message">
+                            <span class="author">${data.author}</span>
+                            <span class="text">${data.text}</span>
+                            <span class="timestamp">${new Date(data.timestamp?.toDate()).toLocaleTimeString()}</span>
+                        </div>
+                    `;
+                    messagesContainer.innerHTML += messageElement;
+                });
+                messagesContainer.scrollTop = messagesContainer.scrollHeight; // Faire défiler vers le bas
+            });
+        }
+    </script>
+</body>
+</html>
