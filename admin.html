@@ -1,80 +1,95 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Administration - Demandes</title>
-  <script src="https://www.gstatic.com/firebasejs/9.17.2/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.17.2/firebase-firestore.js"></script>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 20px;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 20px;
-    }
-    th, td {
-      border: 1px solid #ddd;
-      padding: 10px;
-      text-align: left;
-    }
-    th {
-      background-color: #f4f4f4;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tableau de Bord Admin</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #28a745;
+            color: #fff;
+        }
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+    </style>
 </head>
 <body>
-  <h1>Liste des demandes</h1>
-  <table>
-    <thead>
-      <tr>
-        <th>Nom</th>
-        <th>Demande</th>
-        <th>Date</th>
-      </tr>
-    </thead>
-    <tbody id="demandesTable"></tbody>
-  </table>
+    <h1>Tableau de Bord Admin</h1>
+    <table id="demandesTable">
+        <thead>
+            <tr>
+                <th>Nom</th>
+                <th>Demande</th>
+                <th>Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Les demandes seront insérées ici -->
+        </tbody>
+    </table>
 
-  <script>
-    // Configuration Firebase
-    const firebaseConfig = {
-      apiKey: "AIzaSyAgJk3Rh7yeTxWqsIY3r6VutrkBPqhYW-M",
-      authDomain: "demandes-75e69.firebaseapp.com",
-      projectId: "demandes-75e69",
-      storageBucket: "demandes-75e69.firebasestorage.app",
-      messagingSenderId: "577177831171",
-      appId: "1:577177831171:web:5a65b35d5be7e9427d4b36"
-    };
+    <script type="module">
+        // Import Firebase functions
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-    // Initialiser Firebase
-    const app = firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyAgJk3Rh7yeTxWqsIY3r6VutrkBPqhYW-M",
+            authDomain: "demandes-75e69.firebaseapp.com",
+            projectId: "demandes-75e69",
+            storageBucket: "demandes-75e69.appspot.com",
+            messagingSenderId: "577177831171",
+            appId: "1:577177831171:web:5a65b35d5be7e9427d4b36"
+        };
 
-    // Charger les demandes
-    async function chargerDemandes() {
-      const demandesTable = document.getElementById('demandesTable');
-      try {
-        const snapshot = await db.collection('demandes').get();
-        snapshot.forEach((doc) => {
-          const demande = doc.data();
-          const row = document.createElement('tr');
-          row.innerHTML = `
-            <td>${demande.nom}</td>
-            <td>${demande.demande}</td>
-            <td>${new Date(demande.date).toLocaleString()}</td>
-          `;
-          demandesTable.appendChild(row);
-        });
-      } catch (error) {
-        console.error('Erreur lors du chargement des demandes :', error);
-      }
-    }
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
 
-    chargerDemandes();
-  </script>
+        // Load and display demands
+        async function loadDemandes() {
+            const querySnapshot = await getDocs(collection(db, "demandes"));
+            const tbody = document.querySelector('#demandesTable tbody');
+            tbody.innerHTML = '';
+
+            querySnapshot.forEach((doc) => {
+                const data = doc.data();
+                const row = `
+                    <tr>
+                        <td>${data.name}</td>
+                        <td>${data.demande}</td>
+                        <td>${data.timestamp.toDate().toLocaleString()}</td>
+                    </tr>
+                `;
+                tbody.innerHTML += row;
+            });
+        }
+
+        // Load demands when the page loads
+        document.addEventListener('DOMContentLoaded', loadDemandes);
+    </script>
 </body>
 </html>
