@@ -33,27 +33,68 @@
         tr:hover {
             background-color: #f1f1f1;
         }
+        .login-form {
+            max-width: 300px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .login-form input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .login-form button {
+            width: 100%;
+            padding: 10px;
+            background-color: #28a745;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .login-form button:hover {
+            background-color: #218838;
+        }
+        .hidden {
+            display: none;
+        }
     </style>
 </head>
 <body>
-    <h1>Tableau de Bord Admin</h1>
-    <table id="demandesTable">
-        <thead>
-            <tr>
-                <th>Nom</th>
-                <th>Demande</th>
-                <th>Date</th>
-            </tr>
-        </thead>
-        <tbody>
-            <!-- Les demandes seront insérées ici -->
-        </tbody>
-    </table>
+    <div id="loginSection" class="login-form">
+        <h2>Connexion Admin</h2>
+        <input type="email" id="email" placeholder="Email" required>
+        <input type="password" id="password" placeholder="Mot de passe" required>
+        <button id="loginButton">Se connecter</button>
+        <p id="errorMessage" style="color: red; display: none;">Email ou mot de passe incorrect.</p>
+    </div>
+
+    <div id="adminSection" class="hidden">
+        <h1>Tableau de Bord Admin</h1>
+        <table id="demandesTable">
+            <thead>
+                <tr>
+                    <th>Nom</th>
+                    <th>Demande</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Les demandes seront insérées ici -->
+            </tbody>
+        </table>
+    </div>
 
     <script type="module">
         // Import Firebase functions
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         // Firebase configuration
         const firebaseConfig = {
@@ -68,6 +109,23 @@
         // Initialize Firebase
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        // Login function
+        document.getElementById('loginButton').addEventListener('click', async () => {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            try {
+                await signInWithEmailAndPassword(auth, email, password);
+                document.getElementById('loginSection').classList.add('hidden');
+                document.getElementById('adminSection').classList.remove('hidden');
+                loadDemandes(); // Load demands after successful login
+            } catch (error) {
+                console.error("Erreur de connexion : ", error);
+                document.getElementById('errorMessage').style.display = 'block';
+            }
+        });
 
         // Load and display demands
         async function loadDemandes() {
@@ -87,9 +145,6 @@
                 tbody.innerHTML += row;
             });
         }
-
-        // Load demands when the page loads
-        document.addEventListener('DOMContentLoaded', loadDemandes);
     </script>
 </body>
 </html>
