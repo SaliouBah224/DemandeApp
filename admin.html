@@ -5,33 +5,144 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tableau de Bord Admin</title>
     <style>
-        /* (Vos styles existants restent les mêmes) */
+        /* Styles généraux */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        /* Conteneur principal */
+        .container {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 90%;
+            max-width: 800px;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        /* Formulaire de connexion */
+        .login-form {
+            max-width: 300px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .login-form input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        .login-form button {
+            width: 100%;
+            padding: 10px;
+            background-color: #28a745;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .login-form button:hover {
+            background-color: #218838;
+        }
+
+        /* Section admin */
+        .admin-section {
+            display: none; /* Masqué par défaut */
+        }
+
+        .admin-section table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .admin-section th, .admin-section td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .admin-section th {
+            background-color: #28a745;
+            color: #fff;
+        }
+
+        .admin-section tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        /* Bouton de déconnexion */
+        #logoutButton {
+            padding: 10px 20px;
+            background-color: #dc3545;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+
+        #logoutButton:hover {
+            background-color: #c82333;
+        }
+
+        /* Message d'erreur */
+        #errorMessage {
+            color: red;
+            display: none;
+            margin-top: 10px;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
-    <div id="loginSection" class="login-form">
-        <h2>Connexion Admin</h2>
-        <input type="email" id="email" placeholder="Email" required>
-        <input type="password" id="password" placeholder="Mot de passe" required>
-        <button id="loginButton">Se connecter</button>
-        <p id="errorMessage" style="color: red; display: none;">Email ou mot de passe incorrect.</p>
-    </div>
+    <div class="container">
+        <!-- Formulaire de connexion -->
+        <div id="loginSection" class="login-form">
+            <h2>Connexion Admin</h2>
+            <input type="email" id="email" placeholder="Email" required>
+            <input type="password" id="password" placeholder="Mot de passe" required>
+            <button id="loginButton">Se connecter</button>
+            <p id="errorMessage">Email ou mot de passe incorrect.</p>
+        </div>
 
-    <div id="adminSection" class="hidden">
-        <h1>Tableau de Bord Admin</h1>
-        <button id="logoutButton" style="margin-bottom: 20px;">Déconnexion</button>
-        <table id="demandesTable">
-            <thead>
-                <tr>
-                    <th>Nom</th>
-                    <th>Demande</th>
-                    <th>Date</th>
-                </tr>
-            </thead>
-            <tbody>
-                <!-- Les demandes seront insérées ici -->
-            </tbody>
-        </table>
+        <!-- Section admin -->
+        <div id="adminSection" class="admin-section">
+            <h1>Tableau de Bord Admin</h1>
+            <button id="logoutButton">Déconnexion</button>
+            <table id="demandesTable">
+                <thead>
+                    <tr>
+                        <th>Nom</th>
+                        <th>Demande</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Les demandes seront insérées ici -->
+                </tbody>
+            </table>
+        </div>
     </div>
 
     <script type="module">
@@ -59,17 +170,17 @@
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 // Utilisateur connecté
-                document.getElementById('loginSection').classList.add('hidden');
-                document.getElementById('adminSection').classList.remove('hidden');
+                document.getElementById('loginSection').style.display = 'none';
+                document.getElementById('adminSection').style.display = 'block';
                 loadDemandes(); // Charger les demandes
             } else {
                 // Utilisateur non connecté
-                document.getElementById('loginSection').classList.remove('hidden');
-                document.getElementById('adminSection').classList.add('hidden');
+                document.getElementById('loginSection').style.display = 'block';
+                document.getElementById('adminSection').style.display = 'none';
             }
         });
 
-        // Login function
+        // Gestion de la connexion
         document.getElementById('loginButton').addEventListener('click', async () => {
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
@@ -83,7 +194,7 @@
             }
         });
 
-        // Logout function
+        // Gestion de la déconnexion
         document.getElementById('logoutButton').addEventListener('click', async () => {
             try {
                 await signOut(auth);
@@ -92,7 +203,7 @@
             }
         });
 
-        // Load and display demands
+        // Charger et afficher les demandes
         async function loadDemandes() {
             const querySnapshot = await getDocs(collection(db, "demandes"));
             const tbody = document.querySelector('#demandesTable tbody');
@@ -112,4 +223,4 @@
         }
     </script>
 </body>
-    </html>
+</html>
