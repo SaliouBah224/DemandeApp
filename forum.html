@@ -47,6 +47,7 @@
             margin-bottom: 10px;
             border: 1px solid #ccc;
             border-radius: 4px;
+            font-size: 16px;
         }
 
         button {
@@ -57,6 +58,7 @@
             border: none;
             border-radius: 4px;
             cursor: pointer;
+            font-size: 16px;
         }
 
         button:hover {
@@ -69,6 +71,7 @@
             text-decoration: underline;
             border: none;
             cursor: pointer;
+            font-size: 14px;
         }
 
         .switch-button:hover {
@@ -100,6 +103,7 @@
             padding: 10px;
             border: 1px solid #ccc;
             border-radius: 4px;
+            font-size: 16px;
         }
 
         #messageForm button {
@@ -119,16 +123,26 @@
         .message {
             margin-bottom: 10px;
             padding: 10px;
-            background-color: #e1f5fe;
             border-radius: 4px;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            background-color: #e1f5fe;
+        }
+
+        .message.current-user {
+            background-color: #d1f2eb;
+            text-align: right;
         }
 
         .message .author {
             font-weight: bold;
             color: #333;
+        }
+
+        .message .text {
+            margin: 5px 0;
+            color: #555;
         }
 
         .message .timestamp {
@@ -304,8 +318,9 @@
                 messagesContainer.innerHTML = "";
                 snapshot.forEach((doc) => {
                     const data = doc.data();
+                    const isCurrentUser = data.author === auth.currentUser?.email;
                     const messageElement = `
-                        <div class="message">
+                        <div class="message ${isCurrentUser ? 'current-user' : ''}">
                             <span class="author">${data.author}</span>
                             <span class="text">${data.text}</span>
                             <span class="timestamp">${new Date(data.timestamp?.toDate()).toLocaleTimeString()}</span>
@@ -318,4 +333,4 @@
         }
     </script>
 </body>
-</html>
+                                    </html>
