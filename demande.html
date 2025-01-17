@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Soumettre une demande</title>
+  <script src="https://www.gstatic.com/firebasejs/9.17.2/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.17.2/firebase-firestore.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      padding: 20px;
+    }
+    form {
+      max-width: 400px;
+      margin: auto;
+      display: flex;
+      flex-direction: column;
+    }
+    input, textarea, button {
+      margin-bottom: 15px;
+      padding: 10px;
+      font-size: 16px;
+    }
+    button {
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+  </style>
+</head>
+<body>
+  <h1>Soumettre une demande</h1>
+  <form id="demandeForm">
+    <label for="nom">Nom :</label>
+    <input type="text" id="nom" placeholder="Votre nom" required>
+    <label for="demande">Demande :</label>
+    <textarea id="demande" rows="5" placeholder="Votre demande" required></textarea>
+    <button type="submit">Envoyer</button>
+  </form>
+
+  <script>
+    // Configuration Firebase
+    const firebaseConfig = {
+      apiKey: "AIzaSyAgJk3Rh7yeTxWqsIY3r6VutrkBPqhYW-M",
+      authDomain: "demandes-75e69.firebaseapp.com",
+      projectId: "demandes-75e69",
+      storageBucket: "demandes-75e69.firebasestorage.app",
+      messagingSenderId: "577177831171",
+      appId: "1:577177831171:web:5a65b35d5be7e9427d4b36"
+    };
+
+    // Initialiser Firebase
+    const app = firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    // Gestion du formulaire
+    document.getElementById('demandeForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const nom = document.getElementById('nom').value;
+      const demande = document.getElementById('demande').value;
+
+      try {
+        // Ajouter la demande à Firestore
+        await db.collection('demandes').add({
+          nom,
+          demande,
+          date: new Date().toISOString()
+        });
+        alert('Votre demande a été envoyée avec succès !');
+        document.getElementById('demandeForm').reset();
+      } catch (error) {
+        console.error('Erreur lors de l\'envoi :', error);
+        alert('Une erreur est survenue. Veuillez réessayer.');
+      }
+    });
+  </script>
+</body>
+  </html>
