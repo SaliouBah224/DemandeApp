@@ -1,85 +1,108 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Soumettre une demande</title>
-  <script src="https://www.gstatic.com/firebasejs/9.17.2/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.17.2/firebase-firestore.js"></script>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 20px;
-      padding: 20px;
-    }
-    form {
-      max-width: 400px;
-      margin: auto;
-      display: flex;
-      flex-direction: column;
-    }
-    input, textarea, button {
-      margin-bottom: 15px;
-      padding: 10px;
-      font-size: 16px;
-    }
-    button {
-      background-color: #4CAF50;
-      color: white;
-      border: none;
-      cursor: pointer;
-    }
-    button:hover {
-      background-color: #45a049;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formulaire de Demande</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .container {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 300px;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #28a745;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+    </style>
 </head>
 <body>
-  <h1>Soumettre une demande</h1>
-  <form id="demandeForm">
-    <label for="nom">Nom :</label>
-    <input type="text" id="nom" placeholder="Votre nom" required>
-    <label for="demande">Demande :</label>
-    <textarea id="demande" rows="5" placeholder="Votre demande" required></textarea>
-    <button type="submit">Envoyer</button>
-  </form>
+    <div class="container">
+        <h1>Formulaire de Demande</h1>
+        <form id="demandeForm">
+            <label for="name">Nom:</label>
+            <input type="text" id="name" name="name" required>
+            <label for="demande">Demande:</label>
+            <textarea id="demande" name="demande" required></textarea>
+            <button type="submit">Soumettre</button>
+        </form>
+    </div>
 
-  <script>
-    // Configuration Firebase
-    const firebaseConfig = {
-      apiKey: "AIzaSyAgJk3Rh7yeTxWqsIY3r6VutrkBPqhYW-M",
-      authDomain: "demandes-75e69.firebaseapp.com",
-      projectId: "demandes-75e69",
-      storageBucket: "demandes-75e69.firebasestorage.app",
-      messagingSenderId: "577177831171",
-      appId: "1:577177831171:web:5a65b35d5be7e9427d4b36"
-    };
+    <script type="module">
+        // Import Firebase functions
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-    // Initialiser Firebase
-    const app = firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyAgJk3Rh7yeTxWqsIY3r6VutrkBPqhYW-M",
+            authDomain: "demandes-75e69.firebaseapp.com",
+            projectId: "demandes-75e69",
+            storageBucket: "demandes-75e69.appspot.com",
+            messagingSenderId: "577177831171",
+            appId: "1:577177831171:web:5a65b35d5be7e9427d4b36"
+        };
 
-    // Gestion du formulaire
-    document.getElementById('demandeForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
 
-      const nom = document.getElementById('nom').value;
-      const demande = document.getElementById('demande').value;
+        // Handle form submission
+        document.getElementById('demandeForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
 
-      try {
-        // Ajouter la demande à Firestore
-        await db.collection('demandes').add({
-          nom,
-          demande,
-          date: new Date().toISOString()
+            const name = document.getElementById('name').value;
+            const demande = document.getElementById('demande').value;
+
+            try {
+                await addDoc(collection(db, "demandes"), {
+                    name: name,
+                    demande: demande,
+                    timestamp: new Date()
+                });
+                alert("Demande soumise avec succès !");
+                document.getElementById('demandeForm').reset();
+            } catch (error) {
+                console.error("Erreur lors de la soumission : ", error);
+                alert("Une erreur est survenue. Veuillez réessayer.");
+            }
         });
-        alert('Votre demande a été envoyée avec succès !');
-        document.getElementById('demandeForm').reset();
-      } catch (error) {
-        console.error('Erreur lors de l\'envoi :', error);
-        alert('Une erreur est survenue. Veuillez réessayer.');
-      }
-    });
-  </script>
+    </script>
 </body>
-  </html>
+</html>
