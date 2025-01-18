@@ -81,6 +81,8 @@
             padding: 10px;
             border-radius: 5px;
             margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
         }
 
         .message.current-user {
@@ -90,6 +92,20 @@
 
         .message.other-user {
             background-color: #f8d7da;
+        }
+
+        .message .actions {
+            display: flex;
+            gap: 5px;
+        }
+
+        .actions button {
+            background: none;
+            border: none;
+            color: #007bff;
+            font-size: 12px;
+            cursor: pointer;
+            text-decoration: underline;
         }
 
         .footer {
@@ -102,6 +118,14 @@
             padding: 10px;
             border: 1px solid #ccc;
             border-radius: 5px;
+        }
+
+        #loading {
+            display: none;
+            text-align: center;
+            margin-top: 10px;
+            font-size: 14px;
+            color: #007bff;
         }
     </style>
 </head>
@@ -131,6 +155,7 @@
         <!-- Section Messagerie -->
         <div id="chatSection" class="section">
             <h2>Messagerie</h2>
+            <div id="loading">Chargement...</div>
             <div id="messages"></div>
             <div class="footer">
                 <input type="text" id="messageInput" placeholder="Écrivez un message...">
@@ -143,7 +168,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, query, onSnapshot, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, query, onSnapshot, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyAgJk3Rh7yeTxWqsIY3r6VutrkBPqhYW-M",
@@ -161,8 +186,9 @@
         const loginSection = document.getElementById('loginSection');
         const registerSection = document.getElementById('registerSection');
         const chatSection = document.getElementById('chatSection');
+        const loadingIndicator = document.getElementById('loading');
 
-        // Navigation
+        // Navigation entre les sections
         document.getElementById('showRegister').addEventListener('click', () => {
             loginSection.classList.remove('active');
             registerSection.classList.add('active');
@@ -179,9 +205,12 @@
             const password = document.getElementById('loginPassword').value;
 
             try {
+                loadingIndicator.style.display = 'block';
                 await signInWithEmailAndPassword(auth, email, password);
+                loadingIndicator.style.display = 'none';
             } catch (error) {
                 alert("Erreur : " + error.message);
+                loadingIndicator.style.display = 'none';
             }
         });
 
@@ -192,14 +221,17 @@
             const password = document.getElementById('registerPassword').value;
 
             try {
+                loadingIndicator.style.display = 'block';
                 const userCredential = await createUserWithEmailAndPassword(auth, email, password);
                 await addDoc(collection(db, "users"), {
                     uid: userCredential.user.uid,
-                    pseudo: pseudo,
-                    email: email
+                    pseudo,
+                    email
                 });
+                loadingIndicator.style.display = 'none';
             } catch (error) {
                 alert("Erreur : " + error.message);
+                loadingIndicator.style.display = 'none';
             }
         });
 
@@ -216,7 +248,7 @@
             }
         });
 
-        // Chargement des messages
+        // Charger les messages
         function loadMessages(user) {
             const messagesContainer = document.getElementById('messages');
             const q = query(collection(db, "messages"), orderBy("timestamp", "asc"));
@@ -226,28 +258,56 @@
                 snapshot.forEach((doc) => {
                     const data = doc.data();
                     const isCurrentUser = data.author === user.email;
-                    messagesContainer.innerHTML += `
+                    const messageId = doc.id;
+
+                    const messageHTML = `
                         <div class="message ${isCurrentUser ? 'current-user' : 'other-user'}">
                             ${data.text}
+                            <div class="actions">
+                                ${isCurrentUser ? `
+                                    <button onclick="editMessage('${messageId}', '${data.text}')">Modifier</button>
+                                    <button onclick="deleteMessage('${messageId}')">Supprimer</button>
+                                ` : ''}
+                            </div>
                             <span class="timestamp">${new Date(data.timestamp?.toDate()).toLocaleTimeString()}</span>
-                        </div>`;
+                        </div>
+                    `;
+                    messagesContainer.innerHTML += messageHTML;
                 });
             });
         }
 
-        // Envoyer un message
+        // Ajouter un message
         document.getElementById('sendMessageButton').addEventListener('click', async () => {
-            const text = document.getElementById('messageInput').value.trim();
+            const messageInput = document.getElementById('messageInput');
+            const text = messageInput.value.trim();
 
             if (text) {
+                loadingIndicator.style.display = 'block';
                 await addDoc(collection(db, "messages"), {
                     text,
                     author: auth.currentUser.email,
                     timestamp: serverTimestamp()
                 });
-                document.getElementById('messageInput').value = '';
+                messageInput.value = '';
+                loadingIndicator.style.display = 'none';
             }
         });
+
+        // Modifier un message
+        window.editMessage = async (id, currentText) => {
+            const newText = prompt("Modifier le message :", currentText);
+            if (newText && newText.trim()) {
+                await updateDoc(doc(db, "messages", id), { text: newText });
+            }
+        };
+
+        // Supprimer un message
+        window.deleteMessage = async (id) => {
+            if (confirm("Voulez-vous vraiment supprimer ce message ?")) {
+                await deleteDoc(doc(db, "messages", id));
+            }
+        };
 
         // Déconnexion
         document.getElementById('logoutButton').addEventListener('click', async () => {
@@ -255,4 +315,4 @@
         });
     </script>
 </body>
-    </html>
+            </html>
