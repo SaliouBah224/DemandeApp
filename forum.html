@@ -125,13 +125,13 @@
             padding: 10px;
             border-radius: 4px;
             display: flex;
-            justify-content: space-between;
-            align-items: center;
+            flex-direction: column;
             background-color: #e1f5fe;
         }
 
         .message.current-user {
             background-color: #d1f2eb;
+            align-self: flex-end;
             text-align: right;
         }
 
@@ -164,6 +164,13 @@
         #logoutButton:hover {
             background-color: #c82333;
         }
+
+        /* Messages d'erreur */
+        .error-message {
+            color: red;
+            font-size: 14px;
+            margin-top: 10px;
+        }
     </style>
 </head>
 <body>
@@ -175,6 +182,7 @@
             <input type="password" id="loginPassword" placeholder="Mot de passe" required>
             <button id="loginButton">Se connecter</button>
             <p>Pas de compte ? <button class="switch-button" id="showRegister">Créer un compte</button></p>
+            <p id="loginError" class="error-message"></p>
         </div>
 
         <!-- Section d'inscription -->
@@ -185,6 +193,7 @@
             <input type="password" id="registerPassword" placeholder="Mot de passe" required>
             <button id="registerButton">Créer un compte</button>
             <p>Déjà un compte ? <button class="switch-button" id="showLogin">Se connecter</button></p>
+            <p id="registerError" class="error-message"></p>
         </div>
 
         <!-- Section de la messagerie -->
@@ -224,15 +233,19 @@
         const loginSection = document.getElementById('loginSection');
         const registerSection = document.getElementById('registerSection');
         const chatSection = document.getElementById('chatSection');
+        const loginError = document.getElementById('loginError');
+        const registerError = document.getElementById('registerError');
 
         document.getElementById('showRegister').addEventListener('click', () => {
             loginSection.classList.remove('active');
             registerSection.classList.add('active');
+            loginError.textContent = "";
         });
 
         document.getElementById('showLogin').addEventListener('click', () => {
             registerSection.classList.remove('active');
             loginSection.classList.add('active');
+            registerError.textContent = "";
         });
 
         // Connexion
@@ -242,8 +255,9 @@
 
             try {
                 await signInWithEmailAndPassword(auth, email, password);
+                loginError.textContent = "";
             } catch (error) {
-                alert("Erreur de connexion : " + error.message);
+                loginError.textContent = "Erreur de connexion : " + error.message;
             }
         });
 
@@ -260,9 +274,10 @@
                     pseudo: pseudo,
                     email: email
                 });
+                registerError.textContent = "";
                 alert("Compte créé avec succès !");
             } catch (error) {
-                alert("Erreur lors de la création du compte : " + error.message);
+                registerError.textContent = "Erreur lors de la création du compte : " + error.message;
             }
         });
 
@@ -333,4 +348,4 @@
         }
     </script>
 </body>
-                                    </html>
+</html>
