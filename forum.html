@@ -5,12 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Messagerie Moderne</title>
     <style>
-        /* Styles globaux */
         body {
             font-family: 'Arial', sans-serif;
             background-color: #f4f6f8;
             margin: 0;
-            padding: 0;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -18,116 +16,133 @@
         }
 
         .container {
-            background: #ffffff;
+            background: #fff;
             width: 100%;
-            max-width: 600px;
-            height: 80vh;
+            max-width: 400px;
             border-radius: 10px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            display: flex;
-            flex-direction: column;
             overflow: hidden;
         }
 
-        /* Header */
         .header {
             background-color: #007bff;
             color: white;
             padding: 15px;
             text-align: center;
             font-size: 20px;
-            font-weight: bold;
         }
 
-        /* Zone des messages */
+        .section {
+            padding: 20px;
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            font-size: 16px;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
         #messages {
-            flex: 1;
-            padding: 15px;
+            height: 300px;
             overflow-y: auto;
-            display: flex;
-            flex-direction: column;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            padding: 10px;
             background-color: #f9f9f9;
+            display: flex;
+            flex-direction: column-reverse;
         }
 
-        /* Message */
         .message {
-            max-width: 80%;
+            padding: 10px;
+            border-radius: 5px;
             margin-bottom: 10px;
-            padding: 10px 15px;
-            border-radius: 15px;
-            font-size: 14px;
-            line-height: 1.5;
-            display: inline-block;
-            word-wrap: break-word;
         }
 
         .message.current-user {
             background-color: #d1ecf1;
             align-self: flex-end;
-            color: #055160;
         }
 
         .message.other-user {
             background-color: #f8d7da;
-            align-self: flex-start;
-            color: #721c24;
         }
 
-        .timestamp {
-            display: block;
-            font-size: 12px;
-            margin-top: 5px;
-            color: #999;
-        }
-
-        /* Footer */
         .footer {
             display: flex;
-            align-items: center;
-            padding: 10px;
-            border-top: 1px solid #ddd;
-            background-color: #ffffff;
+            gap: 10px;
         }
 
         .footer input {
             flex: 1;
-            padding: 12px 15px;
-            border-radius: 25px;
+            padding: 10px;
             border: 1px solid #ccc;
-            font-size: 14px;
-            outline: none;
-            margin-right: 10px;
-        }
-
-        .footer button {
-            background-color: #007bff;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 25px;
-            font-size: 14px;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-
-        .footer button:hover {
-            background-color: #0056b3;
+            border-radius: 5px;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">Messagerie Moderne</div>
-        <div id="messages"></div>
-        <div class="footer">
-            <input type="text" id="messageInput" placeholder="Écrivez un message..." required>
-            <button id="sendMessageButton">Envoyer</button>
+
+        <!-- Section Connexion -->
+        <div id="loginSection" class="section active">
+            <h2>Connexion</h2>
+            <input type="email" id="loginEmail" placeholder="Email">
+            <input type="password" id="loginPassword" placeholder="Mot de passe">
+            <button id="loginButton">Se connecter</button>
+            <p>Pas de compte ? <button id="showRegister" style="background: none; color: #007bff; text-decoration: underline; border: none;">Créer un compte</button></p>
+        </div>
+
+        <!-- Section Inscription -->
+        <div id="registerSection" class="section">
+            <h2>Créer un compte</h2>
+            <input type="text" id="registerPseudo" placeholder="Pseudo">
+            <input type="email" id="registerEmail" placeholder="Email">
+            <input type="password" id="registerPassword" placeholder="Mot de passe">
+            <button id="registerButton">Créer un compte</button>
+            <p>Déjà un compte ? <button id="showLogin" style="background: none; color: #007bff; text-decoration: underline; border: none;">Se connecter</button></p>
+        </div>
+
+        <!-- Section Messagerie -->
+        <div id="chatSection" class="section">
+            <h2>Messagerie</h2>
+            <div id="messages"></div>
+            <div class="footer">
+                <input type="text" id="messageInput" placeholder="Écrivez un message...">
+                <button id="sendMessageButton">Envoyer</button>
+            </div>
+            <button id="logoutButton" style="margin-top: 10px; background-color: #dc3545;">Déconnexion</button>
         </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, query, onSnapshot, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         const firebaseConfig = {
@@ -143,55 +158,101 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        const messagesContainer = document.getElementById('messages');
-        const messageInput = document.getElementById('messageInput');
-        const sendMessageButton = document.getElementById('sendMessageButton');
+        const loginSection = document.getElementById('loginSection');
+        const registerSection = document.getElementById('registerSection');
+        const chatSection = document.getElementById('chatSection');
 
-        // Vérifier l'état de connexion
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                loadMessages(user);
-            } else {
-                alert("Vous devez vous connecter !");
-                // Redirigez l'utilisateur vers la page de connexion si nécessaire
+        // Navigation
+        document.getElementById('showRegister').addEventListener('click', () => {
+            loginSection.classList.remove('active');
+            registerSection.classList.add('active');
+        });
+
+        document.getElementById('showLogin').addEventListener('click', () => {
+            registerSection.classList.remove('active');
+            loginSection.classList.add('active');
+        });
+
+        // Connexion
+        document.getElementById('loginButton').addEventListener('click', async () => {
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+
+            try {
+                await signInWithEmailAndPassword(auth, email, password);
+            } catch (error) {
+                alert("Erreur : " + error.message);
             }
         });
 
-        // Charger les messages
+        // Inscription
+        document.getElementById('registerButton').addEventListener('click', async () => {
+            const pseudo = document.getElementById('registerPseudo').value;
+            const email = document.getElementById('registerEmail').value;
+            const password = document.getElementById('registerPassword').value;
+
+            try {
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                await addDoc(collection(db, "users"), {
+                    uid: userCredential.user.uid,
+                    pseudo: pseudo,
+                    email: email
+                });
+            } catch (error) {
+                alert("Erreur : " + error.message);
+            }
+        });
+
+        // État de connexion
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                loginSection.classList.remove('active');
+                registerSection.classList.remove('active');
+                chatSection.classList.add('active');
+                loadMessages(user);
+            } else {
+                loginSection.classList.add('active');
+                chatSection.classList.remove('active');
+            }
+        });
+
+        // Chargement des messages
         function loadMessages(user) {
+            const messagesContainer = document.getElementById('messages');
             const q = query(collection(db, "messages"), orderBy("timestamp", "asc"));
+
             onSnapshot(q, (snapshot) => {
                 messagesContainer.innerHTML = '';
                 snapshot.forEach((doc) => {
                     const data = doc.data();
                     const isCurrentUser = data.author === user.email;
-                    const messageElement = `
+                    messagesContainer.innerHTML += `
                         <div class="message ${isCurrentUser ? 'current-user' : 'other-user'}">
                             ${data.text}
-                            <span class="timestamp">${new Date(data.timestamp?.toDate()).toLocaleString()}</span>
+                            <span class="timestamp">${new Date(data.timestamp?.toDate()).toLocaleTimeString()}</span>
                         </div>`;
-                    messagesContainer.innerHTML += messageElement; // Ajouter les messages à la fin
                 });
-                messagesContainer.scrollTop = messagesContainer.scrollHeight; // Scroller vers le bas
             });
         }
 
         // Envoyer un message
-        sendMessageButton.addEventListener('click', async () => {
-            const text = messageInput.value.trim();
+        document.getElementById('sendMessageButton').addEventListener('click', async () => {
+            const text = document.getElementById('messageInput').value.trim();
+
             if (text) {
-                try {
-                    await addDoc(collection(db, "messages"), {
-                        text: text,
-                        author: auth.currentUser.email,
-                        timestamp: serverTimestamp()
-                    });
-                    messageInput.value = '';
-                } catch (error) {
-                    console.error("Erreur lors de l'envoi du message : ", error);
-                }
+                await addDoc(collection(db, "messages"), {
+                    text,
+                    author: auth.currentUser.email,
+                    timestamp: serverTimestamp()
+                });
+                document.getElementById('messageInput').value = '';
             }
+        });
+
+        // Déconnexion
+        document.getElementById('logoutButton').addEventListener('click', async () => {
+            await signOut(auth);
         });
     </script>
 </body>
-</html>
+    </html>
