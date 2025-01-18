@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Forum de Discussion</title>
+    <title>Messagerie Moderne</title>
     <style>
-        /* Design global */
+        /* Styles globaux */
         body {
             font-family: 'Arial', sans-serif;
-            background-color: #eef2f3;
+            background-color: #f4f6f8;
             margin: 0;
             padding: 0;
             display: flex;
@@ -19,128 +19,107 @@
 
         .container {
             background: #ffffff;
-            padding: 20px;
+            width: 100%;
+            max-width: 600px;
+            height: 80vh;
             border-radius: 10px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            width: 100%;
-            max-width: 500px;
-            text-align: center;
-        }
-
-        h1 {
-            color: #333;
-            margin-bottom: 20px;
-        }
-
-        input {
-            width: 100%;
-            padding: 12px;
-            margin-bottom: 15px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            font-size: 16px;
-            box-sizing: border-box;
-        }
-
-        button {
-            width: 100%;
-            padding: 12px;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            font-size: 16px;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-
-        button:hover {
-            background-color: #0056b3;
-        }
-
-        .switch-button {
-            background: none;
-            border: none;
-            color: #007bff;
-            font-size: 14px;
-            text-decoration: underline;
-            cursor: pointer;
-        }
-
-        .switch-button:hover {
-            color: #0056b3;
-        }
-
-        #messages {
-            height: 300px;
-            overflow-y: auto;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            padding: 10px;
-            margin-bottom: 10px;
-            background-color: #f7f7f7;
-        }
-
-        #messages .message {
-            margin-bottom: 10px;
-            padding: 10px;
-            border-radius: 5px;
             display: flex;
             flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Header */
+        .header {
+            background-color: #007bff;
+            color: white;
+            padding: 15px;
+            text-align: center;
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        /* Zone des messages */
+        #messages {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column-reverse;
+            background-color: #f9f9f9;
+        }
+
+        /* Message */
+        .message {
+            max-width: 80%;
+            margin-bottom: 10px;
+            padding: 10px 15px;
+            border-radius: 15px;
+            font-size: 14px;
+            line-height: 1.5;
+            display: inline-block;
+            word-wrap: break-word;
         }
 
         .message.current-user {
             background-color: #d1ecf1;
             align-self: flex-end;
-            text-align: right;
+            color: #055160;
         }
 
         .message.other-user {
             background-color: #f8d7da;
+            align-self: flex-start;
+            color: #721c24;
         }
 
-        .message .author {
-            font-weight: bold;
-        }
-
-        .message .timestamp {
+        .timestamp {
+            display: block;
             font-size: 12px;
-            color: #666;
+            margin-top: 5px;
+            color: #999;
         }
 
-        #messageInput {
-            width: 100%;
+        /* Footer */
+        .footer {
+            display: flex;
+            align-items: center;
             padding: 10px;
-            border-radius: 5px;
+            border-top: 1px solid #ddd;
+            background-color: #ffffff;
+        }
+
+        .footer input {
+            flex: 1;
+            padding: 12px 15px;
+            border-radius: 25px;
             border: 1px solid #ccc;
-            font-size: 16px;
-            margin-bottom: 10px;
+            font-size: 14px;
+            outline: none;
+            margin-right: 10px;
+        }
+
+        .footer button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 25px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .footer button:hover {
+            background-color: #0056b3;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div id="loginSection" class="active">
-            <h1>Connexion</h1>
-            <input type="email" id="loginEmail" placeholder="Email" required>
-            <input type="password" id="loginPassword" placeholder="Mot de passe" required>
-            <button id="loginButton">Se connecter</button>
-            <button class="switch-button" id="showRegister">Créer un compte</button>
-        </div>
-
-        <div id="registerSection" style="display: none;">
-            <h1>Créer un compte</h1>
-            <input type="text" id="registerPseudo" placeholder="Pseudo" required>
-            <input type="email" id="registerEmail" placeholder="Email" required>
-            <input type="password" id="registerPassword" placeholder="Mot de passe" required>
-            <button id="registerButton">Créer un compte</button>
-            <button class="switch-button" id="showLogin">Se connecter</button>
-        </div>
-
-        <div id="chatSection" style="display: none;">
-            <h1>Messagerie</h1>
-            <button id="logoutButton">Déconnexion</button>
-            <div id="messages"></div>
+        <div class="header">Messagerie Moderne</div>
+        <div id="messages"></div>
+        <div class="footer">
             <input type="text" id="messageInput" placeholder="Écrivez un message..." required>
             <button id="sendMessageButton">Envoyer</button>
         </div>
@@ -148,7 +127,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, query, onSnapshot, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         const firebaseConfig = {
@@ -164,96 +143,51 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        const loginSection = document.getElementById('loginSection');
-        const registerSection = document.getElementById('registerSection');
-        const chatSection = document.getElementById('chatSection');
+        const messagesContainer = document.getElementById('messages');
+        const messageInput = document.getElementById('messageInput');
+        const sendMessageButton = document.getElementById('sendMessageButton');
 
-        document.getElementById('showRegister').addEventListener('click', () => {
-            loginSection.style.display = 'none';
-            registerSection.style.display = 'block';
-        });
-
-        document.getElementById('showLogin').addEventListener('click', () => {
-            registerSection.style.display = 'none';
-            loginSection.style.display = 'block';
-        });
-
-        document.getElementById('loginButton').addEventListener('click', async () => {
-            const email = document.getElementById('loginEmail').value;
-            const password = document.getElementById('loginPassword').value;
-
-            try {
-                await signInWithEmailAndPassword(auth, email, password);
-            } catch (error) {
-                alert("Erreur de connexion : " + error.message);
-            }
-        });
-
-        document.getElementById('registerButton').addEventListener('click', async () => {
-            const pseudo = document.getElementById('registerPseudo').value;
-            const email = document.getElementById('registerEmail').value;
-            const password = document.getElementById('registerPassword').value;
-
-            try {
-                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-                await addDoc(collection(db, "users"), {
-                    uid: userCredential.user.uid,
-                    pseudo: pseudo,
-                    email: email
-                });
-                alert("Compte créé avec succès !");
-            } catch (error) {
-                alert("Erreur : " + error.message);
-            }
-        });
-
-        document.getElementById('logoutButton').addEventListener('click', async () => {
-            await signOut(auth);
-        });
-
+        // Vérifier l'état de connexion
         onAuthStateChanged(auth, (user) => {
             if (user) {
-                loginSection.style.display = 'none';
-                registerSection.style.display = 'none';
-                chatSection.style.display = 'block';
-                loadMessages();
+                loadMessages(user);
             } else {
-                chatSection.style.display = 'none';
-                loginSection.style.display = 'block';
+                alert("Vous devez vous connecter !");
+                // Redirigez l'utilisateur vers la page de connexion si nécessaire
             }
         });
 
-        document.getElementById('sendMessageButton').addEventListener('click', async () => {
-            const message = document.getElementById('messageInput').value;
-            if (message.trim()) {
+        // Charger les messages
+        function loadMessages(user) {
+            const q = query(collection(db, "messages"), orderBy("timestamp", "asc"));
+            onSnapshot(q, (snapshot) => {
+                messagesContainer.innerHTML = '';
+                snapshot.forEach((doc) => {
+                    const data = doc.data();
+                    const isCurrentUser = data.author === user.email;
+                    const messageElement = `
+                        <div class="message ${isCurrentUser ? 'current-user' : 'other-user'}">
+                            ${data.text}
+                            <span class="timestamp">${new Date(data.timestamp?.toDate()).toLocaleString()}</span>
+                        </div>`;
+                    messagesContainer.innerHTML = messageElement + messagesContainer.innerHTML; // Ajouter les messages au début
+                });
+                messagesContainer.scrollTop = messagesContainer.scrollHeight; // Scroller vers le bas
+            });
+        }
+
+        // Envoyer un message
+        sendMessageButton.addEventListener('click', async () => {
+            const text = messageInput.value.trim();
+            if (text) {
                 await addDoc(collection(db, "messages"), {
-                    text: message,
+                    text: text,
                     author: auth.currentUser.email,
                     timestamp: serverTimestamp()
                 });
-                document.getElementById('messageInput').value = '';
+                messageInput.value = '';
             }
         });
-
-        function loadMessages() {
-            const messagesContainer = document.getElementById('messages');
-            const q = query(collection(db, "messages"), orderBy("timestamp", "desc"));
-
-            onSnapshot(q, (snapshot) => {
-                messagesContainer.innerHTML = '';
-                snapshot.forEach(doc => {
-                    const data = doc.data();
-                    const isCurrentUser = data.author === auth.currentUser.email;
-                    const messageDiv = `
-                        <div class="message ${isCurrentUser ? 'current-user' : 'other-user'}">
-                            <div class="author">${isCurrentUser ? 'Vous' : data.author}</div>
-                            <div>${data.text}</div>
-                            <div class="timestamp">${new Date(data.timestamp?.toDate()).toLocaleString()}</div>
-                        </div>`;
-                    messagesContainer.innerHTML += messageDiv;
-                });
-            });
-        }
     </script>
 </body>
-        </html>
+</html>
