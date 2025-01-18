@@ -45,7 +45,7 @@
             padding: 15px;
             overflow-y: auto;
             display: flex;
-            flex-direction: column-reverse;
+            flex-direction: column;
             background-color: #f9f9f9;
         }
 
@@ -127,7 +127,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, query, onSnapshot, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         const firebaseConfig = {
@@ -170,7 +170,7 @@
                             ${data.text}
                             <span class="timestamp">${new Date(data.timestamp?.toDate()).toLocaleString()}</span>
                         </div>`;
-                    messagesContainer.innerHTML = messageElement + messagesContainer.innerHTML; // Ajouter les messages au début
+                    messagesContainer.innerHTML += messageElement; // Ajouter les messages à la fin
                 });
                 messagesContainer.scrollTop = messagesContainer.scrollHeight; // Scroller vers le bas
             });
@@ -180,12 +180,16 @@
         sendMessageButton.addEventListener('click', async () => {
             const text = messageInput.value.trim();
             if (text) {
-                await addDoc(collection(db, "messages"), {
-                    text: text,
-                    author: auth.currentUser.email,
-                    timestamp: serverTimestamp()
-                });
-                messageInput.value = '';
+                try {
+                    await addDoc(collection(db, "messages"), {
+                        text: text,
+                        author: auth.currentUser.email,
+                        timestamp: serverTimestamp()
+                    });
+                    messageInput.value = '';
+                } catch (error) {
+                    console.error("Erreur lors de l'envoi du message : ", error);
+                }
             }
         });
     </script>
